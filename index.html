@@ -61,7 +61,8 @@
     background:var(--paper);border:1px solid var(--border);border-radius:999px;
     padding:5px 12px;display:flex;align-items:center;gap:6px;
   }
-  .who .edit-link{color:var(--secondary);font-weight:700;text-decoration:none;background:none;padding:4px;}
+  .who .edit-link, .who .logout-link{color:var(--secondary);font-weight:700;text-decoration:none;background:none;padding:4px;}
+  .who .logout-link{color:#B23A48;}
   .admin-pill{background:var(--accent);color:var(--ink);font-weight:700;font-size:12px;padding:6px 14px;border-radius:999px;}
 
   main{flex:1;display:flex;flex-direction:column;}
@@ -99,7 +100,13 @@
   }
   .primary-btn:hover{background:var(--primary-deep);}
   .primary-btn:disabled{opacity:.5;cursor:not-allowed;}
+  .secondary-btn{
+    width:100%;padding:13px;border-radius:12px;background:none;border:1.5px solid var(--border);
+    color:var(--ink);font-weight:700;font-size:14.5px;margin-top:10px;
+  }
+  .secondary-btn:hover{border-color:var(--primary);color:var(--primary-deep);}
   .err-msg{color:#B23A48;font-size:13px;margin-top:6px;display:none;}
+  .small-link{background:none;color:var(--secondary);font-size:12.5px;text-decoration:underline;display:block;text-align:center;margin-top:12px;}
 
   .home-wrap{padding:22px 18px 60px;}
   .home-hero{margin-bottom:22px;}
@@ -154,10 +161,6 @@
     background:var(--paper-raised);border:1.5px solid var(--accent);color:var(--primary-deep);
     padding:9px 16px;border-radius:999px;font-size:13.5px;font-weight:700;box-shadow:var(--shadow);
   }
-
-  .admin-entry-wrap{text-align:center;margin-top:34px;}
-  .admin-login-link{background:none;color:var(--ink-soft);font-size:12px;text-decoration:underline;opacity:.55;}
-  .admin-login-link:hover{opacity:1;}
 
   .room-wrap{flex:1;display:flex;flex-direction:column;}
   .room-header{
@@ -286,7 +289,8 @@ import {
   query, orderBy, limit, onSnapshot, arrayUnion
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {
-  getAuth, signInAnonymously, onAuthStateChanged, signInWithEmailAndPassword, signOut
+  getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+  signOut, sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const isConfigured = firebaseConfig.apiKey && !firebaseConfig.apiKey.includes("ضع");
@@ -387,60 +391,211 @@ function stopListening(){
   if(unsubscribeMessages){ unsubscribeMessages(); unsubscribeMessages=null; }
 }
 
+/* ---------------------------------------------------------
+   المصادقة والملف الشخصي (Firebase Authentication + Firestore)
+--------------------------------------------------------- */
 async function checkIsAdmin(uid){
   if(!db || !uid) return false;
-  try{
-    const snap = await getDoc(doc(db,'admins',uid));
-    return snap.exists();
-  }catch(e){ return false; }
+  try{ const snap = await getDoc(doc(db,'admins',uid)); return snap.exists(); }
+  catch(e){ return false; }
 }
+async function fetchUserProfile(uid){
+  if(!db) return null;
+  try{
+    const snap = await getDoc(doc(db,'users',uid));
+    return snap.exists() ? snap.data() : null;
+  }catch(e){ return null; }
+}
+async function saveUserProfile(uid, data){
+  if(!db) return;
+  try{ await setDoc(doc(db,'users',uid), data, {merge:true}); }
+  catch(e){ showToast('تعذّر حفظ البيانات، حاول مرة أخرى'); }
+}
+
 function initAuth(){
-  if(!auth) return;
+  if(!auth){ renderAuthLanding(); return; }
   onAuthStateChanged(auth, async (user)=>{
     if(user){
       currentUser = user;
       isAdminUser = await checkIsAdmin(user.uid);
+      let p = await fetchUserProfile(user.uid);
+      if(!p){
+        p = {name: (user.email||'مستخدم').split('@')[0], role:'hs', majorId:'', pinned:[], createdAt:Date.now()};
+        await saveUserProfile(user.uid, p);
+      }
+      profile = p;
       renderWho();
+      renderHome();
     }else{
-      try{ await signInAnonymously(auth); }catch(e){ /* silent */ }
+      currentUser = null;
+      isAdminUser = false;
+      profile = null;
+      renderWho();
+      renderAuthLanding();
     }
   });
 }
 
-function loadProfile(){
-  try{
-    const raw = localStorage.getItem('mesar_profile');
-    if(raw){ profile = JSON.parse(raw); if(!profile.pinned) profile.pinned=[]; }
-  }catch(e){ profile = null; }
-}
-function saveProfile(){
-  try{ localStorage.setItem('mesar_profile', JSON.stringify(profile)); }
-  catch(e){ showToast('تعذّر حفظ البيانات على هذا المتصفح'); }
-}
-
 function renderWho(){
-  if(!profile){ whoBox.innerHTML=''; return; }
+  if(!profile || !currentUser){ whoBox.innerHTML=''; return; }
   const roleTxt = profile.role==='uni' ? ('طالب/ة ' + (specById(profile.majorId)?.name || '')) : 'طالب/ة ثانوية عامة';
   whoBox.innerHTML = `
     ${isAdminUser ? `<button class="admin-pill" id="adminPanelBtn">🛡️ لوحة الإدارة</button>` : ''}
     <div class="pill">👋 ${esc(profile.name)} <span class="role-txt">— ${esc(roleTxt)}</span></div>
     <button class="edit-link" id="editProfileBtn">تعديل</button>
+    <button class="logout-link" id="logoutBtn">خروج</button>
   `;
-  document.getElementById('editProfileBtn').onclick = ()=>{ renderOnboarding(true); };
+  document.getElementById('editProfileBtn').onclick = ()=>{ renderEditProfile(); };
+  document.getElementById('logoutBtn').onclick = async ()=>{
+    if(auth) await signOut(auth);
+    showToast('تم تسجيل الخروج');
+  };
   if(isAdminUser){ document.getElementById('adminPanelBtn').onclick = ()=> renderAdminPanel(); }
 }
 
-function renderOnboarding(isEdit){
+/* ---------------------------------------------------------
+   شاشات الدخول والتسجيل
+--------------------------------------------------------- */
+function renderAuthLanding(){
   stopListening();
-  const p = isEdit && profile ? profile : {name:'', role:'hs', majorId:'', pinned: profile?profile.pinned:[]};
   mainEl.innerHTML = `
     <div class="onboard-wrap">
       <div class="onboard-card">
-        <h1 class="display">أهلًا فيك 👋</h1>
-        <p class="lead">"مسار" مكان يجمع طلاب الجامعة الحاليين بطلاب الثانوية العامة، حتى ما حد يختار تخصصه وهو أعمى عن حقيقته. عرّف عن نفسك بسرعة عشان نوصلك بالمكان الصح.</p>
+        <h1 class="display">أهلًا فيك بـ مسار 👋</h1>
+        <p class="lead">مكان يجمع طلاب الجامعة الحاليين بطلاب الثانوية العامة، حتى ما حد يختار تخصصه وهو أعمى عن حقيقته. عندك حساب واحد يشتغل من الجوال والكمبيوتر مع بعض.</p>
+        <button class="primary-btn" id="goSignup">إنشاء حساب جديد</button>
+        <button class="secondary-btn" id="goLogin">عندي حساب، تسجيل الدخول</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('goSignup').onclick = ()=> renderSignup();
+  document.getElementById('goLogin').onclick = ()=> renderLogin();
+}
+
+function renderSignup(){
+  stopListening();
+  mainEl.innerHTML = `
+    <div class="onboard-wrap">
+      <div class="onboard-card">
+        <h1 class="display">حساب جديد</h1>
+        <p class="lead">عبّي بياناتك، وحسابك رح يشتغل من أي جهاز تدخل منه.</p>
+        <div class="field"><label>شو اسمك أو اللقب اللي بتحب تظهر فيه؟</label><input type="text" id="suName" maxlength="30"></div>
+        <div class="field"><label>البريد الإلكتروني</label><input type="email" id="suEmail"></div>
+        <div class="field"><label>كلمة المرور (6 أحرف على الأقل)</label><input type="password" id="suPass"></div>
+        <div class="field">
+          <label>مين أنت؟</label>
+          <div class="role-toggle">
+            <button type="button" class="role-btn" id="roleHs">طالب/ة ثانوية عامة</button>
+            <button type="button" class="role-btn" id="roleUni">طالب/ة جامعي/ة حاليًا</button>
+          </div>
+        </div>
+        <div class="field hidden" id="majorField">
+          <label>شو تخصصك الحالي بالجامعة؟</label>
+          <select class="major-select" id="majorSelect">
+            <option value="">اختر التخصص...</option>
+            ${FIELDS.map(f => `<optgroup label="${esc(f.name)}">${f.specs.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')}</optgroup>`).join('')}
+          </select>
+        </div>
+        <div class="err-msg" id="suErr"></div>
+        <button class="primary-btn" id="suBtn">إنشاء الحساب والدخول</button>
+        <button class="small-link" id="toLogin">عندي حساب أصلًا، تسجيل الدخول</button>
+      </div>
+    </div>
+  `;
+  const roleHsBtn = document.getElementById('roleHs');
+  const roleUniBtn = document.getElementById('roleUni');
+  const majorField = document.getElementById('majorField');
+  let role = 'hs';
+  function paintRole(){
+    roleHsBtn.classList.toggle('active', role==='hs');
+    roleUniBtn.classList.toggle('active', role==='uni');
+    majorField.classList.toggle('hidden', role!=='uni');
+  }
+  paintRole();
+  roleHsBtn.onclick = ()=>{ role='hs'; paintRole(); };
+  roleUniBtn.onclick = ()=>{ role='uni'; paintRole(); };
+  document.getElementById('toLogin').onclick = ()=> renderLogin();
+
+  document.getElementById('suBtn').onclick = async ()=>{
+    const name = document.getElementById('suName').value.trim();
+    const email = document.getElementById('suEmail').value.trim();
+    const pass = document.getElementById('suPass').value;
+    const majorId = document.getElementById('majorSelect')?.value || '';
+    const errEl = document.getElementById('suErr');
+    if(!name){ errEl.textContent='اكتب اسمك أولاً.'; errEl.style.display='block'; return; }
+    if(!email || !pass){ errEl.textContent='عبّي البريد وكلمة المرور.'; errEl.style.display='block'; return; }
+    if(pass.length<6){ errEl.textContent='كلمة المرور لازم تكون 6 أحرف على الأقل.'; errEl.style.display='block'; return; }
+    if(role==='uni' && !majorId){ errEl.textContent='اختر تخصصك الحالي.'; errEl.style.display='block'; return; }
+    errEl.style.display='none';
+    if(!auth){ errEl.textContent='الاتصال بالخدمة غير مفعّل حاليًا.'; errEl.style.display='block'; return; }
+    try{
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      const newProfile = {name, role, majorId: role==='uni'?majorId:'', pinned:[], createdAt:Date.now()};
+      await saveUserProfile(cred.user.uid, newProfile);
+      showToast('تم إنشاء حسابك بنجاح 🎉');
+      // onAuthStateChanged رح يتكفل بعرض الصفحة الرئيسية
+    }catch(e){
+      let msg = 'تعذّر إنشاء الحساب.';
+      if(e.code==='auth/email-already-in-use') msg = 'هاد البريد مستخدم بحساب موجود، جرب تسجّل دخول بدلها.';
+      else if(e.code==='auth/invalid-email') msg = 'صيغة البريد الإلكتروني غير صحيحة.';
+      errEl.textContent = msg;
+      errEl.style.display='block';
+    }
+  };
+}
+
+function renderLogin(){
+  stopListening();
+  mainEl.innerHTML = `
+    <div class="onboard-wrap">
+      <div class="onboard-card">
+        <h1 class="display">تسجيل الدخول</h1>
+        <p class="lead">أهلًا فيك مرة تانية 👋</p>
+        <div class="field"><label>البريد الإلكتروني</label><input type="email" id="liEmail"></div>
+        <div class="field"><label>كلمة المرور</label><input type="password" id="liPass"></div>
+        <div class="err-msg" id="liErr"></div>
+        <button class="primary-btn" id="liBtn">دخول</button>
+        <button class="small-link" id="forgotBtn">نسيت كلمة المرور؟</button>
+        <button class="secondary-btn" id="toSignup">ولا عندي حساب، أنشئ واحد جديد</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('toSignup').onclick = ()=> renderSignup();
+  document.getElementById('forgotBtn').onclick = async ()=>{
+    const email = document.getElementById('liEmail').value.trim();
+    const errEl = document.getElementById('liErr');
+    if(!email){ errEl.textContent='اكتب بريدك الإلكتروني فوق أولاً.'; errEl.style.display='block'; return; }
+    try{
+      await sendPasswordResetEmail(auth, email);
+      showToast('تم إرسال رابط إعادة تعيين كلمة المرور لبريدك');
+    }catch(e){ errEl.textContent='تعذّر إرسال الرابط، تأكد من صحة البريد.'; errEl.style.display='block'; }
+  };
+  document.getElementById('liBtn').onclick = async ()=>{
+    const email = document.getElementById('liEmail').value.trim();
+    const pass = document.getElementById('liPass').value;
+    const errEl = document.getElementById('liErr');
+    if(!email || !pass){ errEl.textContent='عبّي البريد وكلمة المرور.'; errEl.style.display='block'; return; }
+    if(!auth){ errEl.textContent='الاتصال بالخدمة غير مفعّل حاليًا.'; errEl.style.display='block'; return; }
+    try{
+      await signInWithEmailAndPassword(auth, email, pass);
+      showToast('أهلًا فيك 🎉');
+    }catch(e){
+      errEl.textContent = 'البريد أو كلمة المرور غير صحيحة.';
+      errEl.style.display='block';
+    }
+  };
+}
+
+function renderEditProfile(){
+  stopListening();
+  const p = profile;
+  mainEl.innerHTML = `
+    <div class="onboard-wrap">
+      <div class="onboard-card">
+        <h1 class="display">تعديل بياناتك</h1>
         <div class="field">
           <label>شو اسمك أو اللقب اللي بتحب تظهر فيه؟</label>
-          <input type="text" id="nameInput" placeholder="مثلاً: أحمد، أو Nova22" maxlength="30" value="${esc(p.name)}">
+          <input type="text" id="nameInput" maxlength="30" value="${esc(p.name)}">
         </div>
         <div class="field">
           <label>مين أنت؟</label>
@@ -457,7 +612,8 @@ function renderOnboarding(isEdit){
           </select>
         </div>
         <div class="err-msg" id="errMsg"></div>
-        <button class="primary-btn" id="startBtn">${isEdit ? 'حفظ التعديلات' : 'ادخل إلى مسار'}</button>
+        <button class="primary-btn" id="saveBtn">حفظ التعديلات</button>
+        <button class="secondary-btn" id="cancelBtn">رجوع بدون حفظ</button>
       </div>
     </div>
   `;
@@ -473,21 +629,25 @@ function renderOnboarding(isEdit){
   paintRole();
   roleHsBtn.onclick = ()=>{ role='hs'; paintRole(); };
   roleUniBtn.onclick = ()=>{ role='uni'; paintRole(); };
+  document.getElementById('cancelBtn').onclick = ()=> renderHome();
 
-  document.getElementById('startBtn').onclick = ()=>{
+  document.getElementById('saveBtn').onclick = async ()=>{
     const name = document.getElementById('nameInput').value.trim();
     const majorId = document.getElementById('majorSelect')?.value || '';
     const errEl = document.getElementById('errMsg');
     if(!name){ errEl.textContent='اكتب اسمك أولاً.'; errEl.style.display='block'; return; }
     if(role==='uni' && !majorId){ errEl.textContent='اختر تخصصك الحالي.'; errEl.style.display='block'; return; }
     errEl.style.display='none';
-    profile = {name, role, majorId: role==='uni'?majorId:'', pinned: p.pinned || []};
-    saveProfile();
+    profile = {...profile, name, role, majorId: role==='uni'?majorId:''};
+    await saveUserProfile(currentUser.uid, profile);
     renderWho();
     renderHome();
   };
 }
 
+/* ---------------------------------------------------------
+   الصفحة الرئيسية
+--------------------------------------------------------- */
 function renderHome(){
   stopListening();
   const pinnedSpecs = (profile.pinned||[]).map(id=>specById(id)).filter(Boolean);
@@ -509,12 +669,9 @@ function renderHome(){
         </div>
       </div>` : ''}
       <div class="fields-grid" id="fieldsGrid"></div>
-      ${!isAdminUser ? `<div class="admin-entry-wrap"><button class="admin-login-link" id="adminEntryBtn">🛡️ دخول الإدارة</button></div>` : ''}
     </div>
   `;
   document.getElementById('examsNavBtn').onclick = ()=> renderExams();
-  const adminEntryBtn = document.getElementById('adminEntryBtn');
-  if(adminEntryBtn) adminEntryBtn.onclick = ()=> renderAdminLogin();
 
   function paintGrid(filter){
     const grid = document.getElementById('fieldsGrid');
@@ -543,13 +700,13 @@ function renderHome(){
     }).join('');
     grid.querySelectorAll('[data-open]').forEach(btn=>{ btn.onclick = ()=> renderRoom(btn.getAttribute('data-open')); });
     grid.querySelectorAll('[data-pin]').forEach(btn=>{
-      btn.onclick = (e)=>{
+      btn.onclick = async (e)=>{
         e.stopPropagation();
         const id = btn.getAttribute('data-pin');
         profile.pinned = profile.pinned || [];
         const idx = profile.pinned.indexOf(id);
         if(idx>-1) profile.pinned.splice(idx,1); else profile.pinned.push(id);
-        saveProfile();
+        await saveUserProfile(currentUser.uid, {pinned: profile.pinned});
         renderHome();
       };
     });
@@ -559,49 +716,9 @@ function renderHome(){
   mainEl.querySelectorAll('.pinned-chip').forEach(btn=>{ btn.onclick = ()=> renderRoom(btn.getAttribute('data-open')); });
 }
 
-function renderAdminLogin(){
-  stopListening();
-  mainEl.innerHTML = `
-    <div class="onboard-wrap">
-      <div class="onboard-card">
-        <h1 class="display">دخول الإدارة</h1>
-        <p class="lead">هاد القسم مخصص للمشرفين المخوّلين فقط على "مسار".</p>
-        <div class="field"><label>البريد الإلكتروني</label><input type="email" id="adminEmail"></div>
-        <div class="field"><label>كلمة المرور</label><input type="password" id="adminPass"></div>
-        <div class="err-msg" id="adminErr"></div>
-        <button class="primary-btn" id="adminLoginBtn">دخول</button>
-        <button class="back-btn" id="adminBackBtn" style="margin-top:14px;">→ رجوع</button>
-      </div>
-    </div>
-  `;
-  document.getElementById('adminBackBtn').onclick = ()=> renderHome();
-  document.getElementById('adminLoginBtn').onclick = async ()=>{
-    const email = document.getElementById('adminEmail').value.trim();
-    const pass = document.getElementById('adminPass').value;
-    const errEl = document.getElementById('adminErr');
-    if(!email || !pass){ errEl.textContent='عبّي البريد وكلمة المرور.'; errEl.style.display='block'; return; }
-    if(!auth){ errEl.textContent='الاتصال بالخدمة غير مفعّل حاليًا.'; errEl.style.display='block'; return; }
-    try{
-      const cred = await signInWithEmailAndPassword(auth, email, pass);
-      const ok = await checkIsAdmin(cred.user.uid);
-      if(!ok){
-        errEl.textContent = 'هذا الحساب غير مخوّل كإداري.';
-        errEl.style.display='block';
-        await signOut(auth);
-        return;
-      }
-      isAdminUser = true;
-      currentUser = cred.user;
-      showToast('تم الدخول كإداري بنجاح');
-      renderWho();
-      renderAdminPanel();
-    }catch(e){
-      errEl.textContent = 'بيانات الدخول غير صحيحة.';
-      errEl.style.display='block';
-    }
-  };
-}
-
+/* ---------------------------------------------------------
+   لوحة الإدارة (قفل الغرف، كتم من داخل الغرفة)
+--------------------------------------------------------- */
 async function renderAdminPanel(){
   stopListening();
   mainEl.innerHTML = `
@@ -611,7 +728,6 @@ async function renderAdminPanel(){
         <h2 class="display">لوحة الإدارة</h2>
         <p>قفل أو فتح أي غرفة نقاش. الكتم يتم من داخل الغرفة نفسها بجانب أي رسالة.</p>
       </div>
-      <button class="primary-btn" id="adminLogoutBtn" style="max-width:220px;margin-bottom:20px;">تسجيل خروج الإدارة</button>
       <div class="admin-section">
         <h3>🔒 قفل / فتح الغرف</h3>
         <div id="roomsLockList">جاري التحميل...</div>
@@ -619,13 +735,6 @@ async function renderAdminPanel(){
     </div>
   `;
   document.getElementById('adminBack').onclick = ()=> renderHome();
-  document.getElementById('adminLogoutBtn').onclick = async ()=>{
-    if(auth) await signOut(auth);
-    isAdminUser=false;
-    showToast('تم تسجيل الخروج من الإدارة');
-    renderWho();
-    renderHome();
-  };
 
   const listEl = document.getElementById('roomsLockList');
   listEl.innerHTML = ALL_SPECS.map(s=>`
@@ -674,6 +783,9 @@ async function muteUser(uid, name){
   }catch(e){ showToast('تعذّر تنفيذ العملية'); }
 }
 
+/* ---------------------------------------------------------
+   امتحانات تجريبية
+--------------------------------------------------------- */
 async function renderExams(){
   stopListening();
   mainEl.innerHTML = `
@@ -751,6 +863,9 @@ async function renderExams(){
   document.getElementById('examSearch').oninput = (e)=> paintExams(e.target.value);
 }
 
+/* ---------------------------------------------------------
+   غرفة النقاش (Firestore)
+--------------------------------------------------------- */
 function timeAgo(ts){
   const diff = Math.max(0, Date.now()-ts);
   const m = Math.floor(diff/60000);
@@ -906,13 +1021,11 @@ async function renderRoom(specId){
   input.onkeydown = (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); send(); } };
 }
 
-(function init(){
-  loadProfile();
-  renderWho();
-  initAuth();
-  if(profile && profile.name){ renderHome(); }
-  else{ renderOnboarding(false); }
-})();
+/* ---------------------------------------------------------
+   نقطة البداية
+--------------------------------------------------------- */
+mainEl.innerHTML = '<div class="onboard-wrap"><p style="color:var(--ink-soft)">جارِ التحميل...</p></div>';
+initAuth();
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
