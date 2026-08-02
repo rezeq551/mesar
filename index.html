@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مسار — دليلك لاختيار التخصص</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#146356">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="مسار">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Aref+Ruqaa:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B2A28;
+    --ink-soft:#5B6B66;
+    --paper:#EFF2ED;
+    --paper-raised:#FFFFFF;
+    --primary:#146356;
+    --primary-deep:#0E4A40;
+    --accent:#E8A33D;
+    --secondary:#4A6FA5;
+    --border:#DCE1D8;
+    --radius:16px;
+    --shadow:0 2px 10px rgba(20,99,86,0.08);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Tajawal',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  h1,h2,h3,.display{font-family:'Aref Ruqaa',serif;}
+  button{font-family:inherit;cursor:pointer;border:none;}
+  input,textarea{font-family:inherit;}
+  ::selection{background:var(--accent);color:var(--ink);}
+
+  #app{max-width:1100px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
+
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 20px;background:var(--paper-raised);
+    border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20;
+  }
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand .mark{
+    width:38px;height:38px;border-radius:10px;background:var(--primary);
+    color:#fff;display:flex;align-items:center;justify-content:center;
+    font-family:'Aref Ruqaa',serif;font-size:20px;font-weight:700;flex-shrink:0;
+  }
+  .brand .name{font-family:'Aref Ruqaa',serif;font-size:22px;font-weight:700;color:var(--primary-deep);}
+  .brand .tag{font-size:11px;color:var(--ink-soft);margin-top:-2px;}
+  .who{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-soft);flex-wrap:wrap;justify-content:flex-end;}
+  .who .pill{
+    background:var(--paper);border:1px solid var(--border);border-radius:999px;
+    padding:5px 12px;display:flex;align-items:center;gap:6px;
+  }
+  .who .edit-link{color:var(--secondary);font-weight:700;text-decoration:none;background:none;padding:4px;}
+  .admin-pill{background:var(--accent);color:var(--ink);font-weight:700;font-size:12px;padding:6px 14px;border-radius:999px;}
+
+  main{flex:1;display:flex;flex-direction:column;}
+
+  .onboard-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:32px 18px;}
+  .onboard-card{
+    background:var(--paper-raised);border:1px solid var(--border);
+    border-radius:20px;box-shadow:var(--shadow);padding:36px 30px;
+    max-width:480px;width:100%;
+  }
+  .onboard-card h1{font-size:30px;margin:0 0 6px;color:var(--primary-deep);}
+  .onboard-card p.lead{color:var(--ink-soft);margin:0 0 26px;line-height:1.9;font-size:15px;}
+  .field{margin-bottom:18px;}
+  .field label{display:block;font-weight:700;font-size:13px;margin-bottom:8px;color:var(--ink);}
+  .field input[type=text],.field input[type=password],.field input[type=email]{
+    width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid var(--border);
+    font-size:15px;background:var(--paper);outline:none;transition:.15s;
+  }
+  .field input[type=text]:focus,.field input[type=password]:focus,.field input[type=email]:focus{border-color:var(--primary);background:#fff;}
+  .role-toggle{display:flex;gap:10px;}
+  .role-btn{
+    flex:1;padding:14px 10px;border-radius:12px;border:1.5px solid var(--border);
+    background:var(--paper);text-align:center;font-weight:700;font-size:13.5px;color:var(--ink-soft);
+    transition:.15s;line-height:1.5;
+  }
+  .role-btn.active{border-color:var(--primary);background:rgba(20,99,86,0.08);color:var(--primary-deep);}
+  select.major-select{
+    width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid var(--border);
+    background:var(--paper);font-size:14.5px;outline:none;
+  }
+  .hidden{display:none !important;}
+  .primary-btn{
+    width:100%;padding:14px;border-radius:12px;background:var(--primary);color:#fff;
+    font-weight:700;font-size:15.5px;margin-top:8px;transition:.15s;
+  }
+  .primary-btn:hover{background:var(--primary-deep);}
+  .primary-btn:disabled{opacity:.5;cursor:not-allowed;}
+  .err-msg{color:#B23A48;font-size:13px;margin-top:6px;display:none;}
+
+  .home-wrap{padding:22px 18px 60px;}
+  .home-hero{margin-bottom:22px;}
+  .home-hero h2{font-size:26px;margin:0 0 6px;color:var(--primary-deep);}
+  .home-hero p{color:var(--ink-soft);margin:0;font-size:14.5px;line-height:1.8;max-width:640px;}
+  .search-box{position:relative;margin:20px 0 28px;}
+  .search-box input{
+    width:100%;padding:13px 16px;border-radius:12px;border:1.5px solid var(--border);
+    background:var(--paper-raised);font-size:14.5px;outline:none;box-shadow:var(--shadow);
+  }
+  .search-box input:focus{border-color:var(--primary);}
+
+  .quick-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px;}
+  .quick-action-btn{
+    background:var(--paper-raised);border:1.5px solid var(--border);padding:10px 18px;
+    border-radius:12px;font-weight:700;font-size:13.5px;color:var(--primary-deep);box-shadow:var(--shadow);
+  }
+  .quick-action-btn:hover{border-color:var(--primary);}
+
+  .fields-grid{display:grid;grid-template-columns:1fr;gap:22px;}
+  @media(min-width:760px){.fields-grid{grid-template-columns:1fr 1fr;}}
+
+  .field-line{
+    background:var(--paper-raised);border:1px solid var(--border);border-radius:18px;
+    padding:18px 18px 8px;box-shadow:var(--shadow);
+  }
+  .field-line-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .field-dot{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:700;font-size:14px;flex-shrink:0;font-family:'Aref Ruqaa',serif;}
+  .field-line-head h3{margin:0;font-size:18px;}
+  .track{position:relative;padding-right:14px;border-right:2.5px solid var(--border);margin-right:15px;}
+  .spec-row{
+    position:relative;padding:9px 14px 9px 8px;margin-bottom:6px;border-radius:10px;
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+    transition:.12s;
+  }
+  .spec-row:hover{background:var(--paper);}
+  .spec-row::before{
+    content:'';position:absolute;right:-19.5px;top:50%;transform:translateY(-50%);
+    width:9px;height:9px;border-radius:50%;background:var(--paper-raised);border:2.5px solid var(--border);
+  }
+  .spec-row.pinned::before{border-color:var(--accent);background:var(--accent);}
+  .spec-name-btn{background:none;text-align:right;font-size:14.5px;font-weight:500;color:var(--ink);flex:1;padding:2px 0;}
+  .spec-meta{font-size:11px;color:var(--ink-soft);display:flex;align-items:center;gap:4px;flex-shrink:0;}
+  .pin-btn{background:none;color:var(--border);font-size:16px;padding:2px 4px;flex-shrink:0;}
+  .pin-btn.active{color:var(--accent);}
+
+  .pinned-section{margin-bottom:26px;}
+  .pinned-section h3{font-size:15px;color:var(--ink-soft);margin:0 0 10px;font-weight:700;font-family:'Tajawal';}
+  .pinned-chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .pinned-chip{
+    background:var(--paper-raised);border:1.5px solid var(--accent);color:var(--primary-deep);
+    padding:9px 16px;border-radius:999px;font-size:13.5px;font-weight:700;box-shadow:var(--shadow);
+  }
+
+  .admin-entry-wrap{text-align:center;margin-top:34px;}
+  .admin-login-link{background:none;color:var(--ink-soft);font-size:12px;text-decoration:underline;opacity:.55;}
+  .admin-login-link:hover{opacity:1;}
+
+  .room-wrap{flex:1;display:flex;flex-direction:column;}
+  .room-header{
+    padding:14px 18px;background:var(--paper-raised);border-bottom:1px solid var(--border);
+    position:sticky;top:65px;z-index:15;
+  }
+  .back-btn{background:none;color:var(--secondary);font-weight:700;font-size:13.5px;padding:4px 0 8px;display:flex;align-items:center;gap:4px;}
+  .room-title-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+  .room-title-row h2{margin:0;font-size:21px;color:var(--primary-deep);}
+  .room-breadcrumb{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+  .experts-row{margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .experts-label{font-size:12px;color:var(--ink-soft);font-weight:700;}
+  .expert-chip{
+    background:rgba(20,99,86,0.08);color:var(--primary-deep);font-size:12px;font-weight:700;
+    padding:4px 11px;border-radius:999px;
+  }
+  .lock-toggle-btn{background:var(--paper);border:1px solid var(--border);padding:6px 12px;border-radius:8px;font-size:12.5px;font-weight:700;color:var(--ink);}
+  .lock-toggle-btn.locked{background:rgba(178,58,72,0.1);color:#B23A48;border-color:rgba(178,58,72,0.3);}
+  .lock-toggle-btn.small{padding:6px 10px;font-size:11.5px;}
+
+  .room-banner{margin:14px 18px 0;padding:12px 16px;border-radius:12px;font-size:13.5px;text-align:center;}
+  .room-banner.locked{background:rgba(178,58,72,0.08);color:#B23A48;border:1px solid rgba(178,58,72,0.25);}
+  .room-banner.muted{background:rgba(232,163,61,0.14);color:#8a5c14;border:1px solid rgba(232,163,61,0.35);}
+
+  .messages{flex:1;padding:18px;overflow-y:auto;display:flex;flex-direction:column;gap:14px;}
+  .empty-state{text-align:center;margin:auto;padding:30px;color:var(--ink-soft);max-width:340px;}
+  .empty-state .display{font-size:22px;color:var(--primary-deep);margin-bottom:8px;}
+  .msg{max-width:78%;}
+  .msg.mine{align-self:flex-start;}
+  .msg-head{display:flex;align-items:center;gap:7px;margin-bottom:4px;flex-wrap:wrap;}
+  .msg-name{font-weight:700;font-size:13px;color:var(--ink);}
+  .msg-badge{background:var(--primary);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;}
+  .msg-role-hs{color:var(--ink-soft);font-size:11px;}
+  .msg-time{font-size:10.5px;color:var(--ink-soft);}
+  .msg-bubble{
+    background:var(--paper-raised);border:1px solid var(--border);border-radius:14px 14px 14px 4px;
+    padding:11px 15px;font-size:14.5px;line-height:1.85;box-shadow:var(--shadow);word-wrap:break-word;
+  }
+  .msg.mine .msg-bubble{background:rgba(20,99,86,0.07);border-color:rgba(20,99,86,0.25);border-radius:14px 14px 4px 14px;}
+  .mute-btn{background:none;color:var(--ink-soft);font-size:12px;padding:2px 7px;border-radius:6px;margin-right:auto;}
+  .mute-btn:hover{background:rgba(178,58,72,0.1);color:#B23A48;}
+
+  .composer{
+    padding:12px 16px;background:var(--paper-raised);border-top:1px solid var(--border);
+    position:sticky;bottom:0;display:flex;gap:10px;align-items:flex-end;
+  }
+  .composer textarea{
+    flex:1;resize:none;border:1.5px solid var(--border);border-radius:14px;padding:11px 14px;
+    font-size:14.5px;outline:none;max-height:120px;background:var(--paper);
+  }
+  .composer textarea:focus{border-color:var(--primary);background:#fff;}
+  .composer textarea:disabled{opacity:.5;}
+  .send-btn{
+    background:var(--primary);color:#fff;width:46px;height:46px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;transition:.15s;
+  }
+  .send-btn:hover{background:var(--primary-deep);}
+  .send-btn:disabled{opacity:.4;}
+
+  .toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:#fff;padding:10px 20px;border-radius:999px;font-size:13px;
+    z-index:100;opacity:0;pointer-events:none;transition:.25s;
+  }
+  .toast.show{opacity:1;bottom:30px;}
+
+  .setup-banner{
+    background:#B23A48;color:#fff;padding:12px 18px;font-size:13.5px;text-align:center;line-height:1.7;
+  }
+  .setup-banner code{background:rgba(255,255,255,.2);padding:1px 6px;border-radius:5px;}
+
+  .admin-section{margin-top:20px;}
+  .admin-section h3{font-size:16px;color:var(--primary-deep);margin:20px 0 12px;font-family:'Tajawal';font-weight:700;}
+  .admin-room-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;background:var(--paper-raised);font-size:14px;}
+
+  .admin-add-exam{background:var(--paper-raised);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:24px;box-shadow:var(--shadow);}
+  .admin-add-exam h3{margin:0 0 14px;font-size:16px;color:var(--primary-deep);font-family:'Tajawal';font-weight:700;}
+
+  .exam-card{background:var(--paper-raised);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:12px;box-shadow:var(--shadow);}
+  .exam-card h3{margin:6px 0 6px;font-size:16px;color:var(--ink);}
+  .exam-card p{margin:0 0 10px;font-size:13.5px;color:var(--ink-soft);line-height:1.7;}
+  .exam-spec-tag{background:rgba(20,99,86,0.08);color:var(--primary-deep);font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;}
+  .exam-open-btn{display:inline-block;background:var(--primary);color:#fff;padding:8px 16px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;}
+  .exam-open-btn:hover{background:var(--primary-deep);}
+
+  @media(max-width:600px){
+    .brand .tag{display:none;}
+    .who .pill span.role-txt{display:none;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="setupBanner"></div>
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark">م</div>
+      <div>
+        <div class="name">مسار</div>
+        <div class="tag">صوت من سبقوك بالتخصص</div>
+      </div>
+    </div>
+    <div class="who" id="whoBox"></div>
+  </header>
+  <main id="main"></main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+/* =========================================================
+   ⚙️ إعدادات Firebase
+========================================================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyCzofQBEdzODkC9IKzzbBt71_16CDcJmhQ",
+  authDomain: "mesar-7ae93.firebaseapp.com",
+  projectId: "mesar-7ae93",
+  storageBucket: "mesar-7ae93.firebasestorage.app",
+  messagingSenderId: "986394924178",
+  appId: "1:986394924178:web:ee909a6436e252ab70c24b"
+};
+/* ========================================================= */
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, doc, getDoc, setDoc, deleteDoc, collection, addDoc, getDocs,
+  query, orderBy, limit, onSnapshot, arrayUnion
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+  getAuth, signInAnonymously, onAuthStateChanged, signInWithEmailAndPassword, signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const isConfigured = firebaseConfig.apiKey && !firebaseConfig.apiKey.includes("ضع");
+let db = null, auth = null;
+if(isConfigured){
+  const app = initializeApp(firebaseConfig);
+  db = getFirestore(app);
+  auth = getAuth(app);
+}else{
+  document.getElementById('setupBanner').innerHTML =
+    `<div class="setup-banner">⚠️ لسا ما ربطت مشروع Firebase — عدّل <code>firebaseConfig</code> بأعلى ملف index.html بمعلومات مشروعك المجاني حتى تشتغل الدردشة فعليًا.</div>`;
+}
+
+const FIELDS = [
+  {id:'eng', name:'الهندسة', color:'#146356', specs:[
+    {id:'eng-civil', name:'هندسة مدنية'},
+    {id:'eng-electrical', name:'هندسة كهربائية'},
+    {id:'eng-mechanical', name:'هندسة ميكانيكية'},
+    {id:'eng-energy', name:'هندسة الطاقة والطاقة المتجددة'},
+    {id:'eng-computer', name:'هندسة حاسوب'},
+    {id:'eng-industrial', name:'هندسة صناعية'},
+    {id:'eng-architecture', name:'هندسة معمارية'},
+    {id:'eng-chemical', name:'هندسة كيميائية'},
+    {id:'eng-petroleum', name:'هندسة بترول ونفط'},
+  ]},
+  {id:'med', name:'الطب والعلوم الصحية', color:'#B23A48', specs:[
+    {id:'med-general', name:'طب بشري'},
+    {id:'med-dental', name:'طب أسنان'},
+    {id:'med-pharm', name:'صيدلة'},
+    {id:'med-nursing', name:'تمريض'},
+    {id:'med-physio', name:'علاج طبيعي'},
+    {id:'med-nutrition', name:'تغذية علاجية'},
+  ]},
+  {id:'it', name:'الحوسبة وتقنية المعلومات', color:'#4A6FA5', specs:[
+    {id:'it-cs', name:'علوم حاسوب'},
+    {id:'it-security', name:'أمن سيبراني'},
+    {id:'it-ai', name:'ذكاء اصطناعي وتعلم آلي'},
+    {id:'it-swe', name:'هندسة برمجيات'},
+    {id:'it-is', name:'نظم معلومات إدارية'},
+  ]},
+  {id:'biz', name:'إدارة الأعمال والاقتصاد', color:'#E8A33D', specs:[
+    {id:'biz-mgmt', name:'إدارة أعمال'},
+    {id:'biz-acc', name:'محاسبة'},
+    {id:'biz-mkt', name:'تسويق'},
+    {id:'biz-econ', name:'اقتصاد'},
+    {id:'biz-fin', name:'تمويل ومصارف'},
+  ]},
+  {id:'sci', name:'العلوم الأساسية', color:'#6B8F71', specs:[
+    {id:'sci-phys', name:'فيزياء'},
+    {id:'sci-chem', name:'كيمياء'},
+    {id:'sci-bio', name:'أحياء'},
+    {id:'sci-math', name:'رياضيات'},
+    {id:'sci-stat', name:'إحصاء'},
+  ]},
+  {id:'law', name:'القانون والعلوم السياسية', color:'#7A5C61', specs:[
+    {id:'law-law', name:'قانون'},
+    {id:'law-pol', name:'علوم سياسية'},
+    {id:'law-intl', name:'علاقات دولية'},
+  ]},
+  {id:'edu', name:'التربية والآداب', color:'#8E6C88', specs:[
+    {id:'edu-teach', name:'تربية وتعليم'},
+    {id:'edu-arabic', name:'لغة عربية'},
+    {id:'edu-english', name:'لغة إنجليزية'},
+    {id:'edu-psych', name:'علم نفس'},
+    {id:'edu-social', name:'علم اجتماع'},
+  ]},
+  {id:'media', name:'الإعلام والتصميم', color:'#3E7C8C', specs:[
+    {id:'media-comm', name:'إعلام واتصال'},
+    {id:'media-design', name:'تصميم جرافيك'},
+    {id:'media-interior', name:'تصميم داخلي'},
+  ]},
+];
+const ALL_SPECS = FIELDS.flatMap(f => f.specs.map(s => ({...s, fieldId:f.id, fieldName:f.name, fieldColor:f.color})));
+function specById(id){ return ALL_SPECS.find(s=>s.id===id); }
+function fieldById(id){ return FIELDS.find(f=>f.id===id); }
+
+let profile = null;
+let currentRoom = null;
+let unsubscribeMessages = null;
+let currentUser = null;
+let isAdminUser = false;
+
+const mainEl = document.getElementById('main');
+const whoBox = document.getElementById('whoBox');
+
+function showToast(text){
+  const t = document.getElementById('toast');
+  t.textContent = text;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+function esc(str){
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+function stopListening(){
+  if(unsubscribeMessages){ unsubscribeMessages(); unsubscribeMessages=null; }
+}
+
+async function checkIsAdmin(uid){
+  if(!db || !uid) return false;
+  try{
+    const snap = await getDoc(doc(db,'admins',uid));
+    return snap.exists();
+  }catch(e){ return false; }
+}
+function initAuth(){
+  if(!auth) return;
+  onAuthStateChanged(auth, async (user)=>{
+    if(user){
+      currentUser = user;
+      isAdminUser = await checkIsAdmin(user.uid);
+      renderWho();
+    }else{
+      try{ await signInAnonymously(auth); }catch(e){ /* silent */ }
+    }
+  });
+}
+
+function loadProfile(){
+  try{
+    const raw = localStorage.getItem('mesar_profile');
+    if(raw){ profile = JSON.parse(raw); if(!profile.pinned) profile.pinned=[]; }
+  }catch(e){ profile = null; }
+}
+function saveProfile(){
+  try{ localStorage.setItem('mesar_profile', JSON.stringify(profile)); }
+  catch(e){ showToast('تعذّر حفظ البيانات على هذا المتصفح'); }
+}
+
+function renderWho(){
+  if(!profile){ whoBox.innerHTML=''; return; }
+  const roleTxt = profile.role==='uni' ? ('طالب/ة ' + (specById(profile.majorId)?.name || '')) : 'طالب/ة ثانوية عامة';
+  whoBox.innerHTML = `
+    ${isAdminUser ? `<button class="admin-pill" id="adminPanelBtn">🛡️ لوحة الإدارة</button>` : ''}
+    <div class="pill">👋 ${esc(profile.name)} <span class="role-txt">— ${esc(roleTxt)}</span></div>
+    <button class="edit-link" id="editProfileBtn">تعديل</button>
+  `;
+  document.getElementById('editProfileBtn').onclick = ()=>{ renderOnboarding(true); };
+  if(isAdminUser){ document.getElementById('adminPanelBtn').onclick = ()=> renderAdminPanel(); }
+}
+
+function renderOnboarding(isEdit){
+  stopListening();
+  const p = isEdit && profile ? profile : {name:'', role:'hs', majorId:'', pinned: profile?profile.pinned:[]};
+  mainEl.innerHTML = `
+    <div class="onboard-wrap">
+      <div class="onboard-card">
+        <h1 class="display">أهلًا فيك 👋</h1>
+        <p class="lead">"مسار" مكان يجمع طلاب الجامعة الحاليين بطلاب الثانوية العامة، حتى ما حد يختار تخصصه وهو أعمى عن حقيقته. عرّف عن نفسك بسرعة عشان نوصلك بالمكان الصح.</p>
+        <div class="field">
+          <label>شو اسمك أو اللقب اللي بتحب تظهر فيه؟</label>
+          <input type="text" id="nameInput" placeholder="مثلاً: أحمد، أو Nova22" maxlength="30" value="${esc(p.name)}">
+        </div>
+        <div class="field">
+          <label>مين أنت؟</label>
+          <div class="role-toggle">
+            <button type="button" class="role-btn" id="roleHs">طالب/ة ثانوية عامة</button>
+            <button type="button" class="role-btn" id="roleUni">طالب/ة جامعي/ة حاليًا</button>
+          </div>
+        </div>
+        <div class="field ${p.role==='uni'?'':'hidden'}" id="majorField">
+          <label>شو تخصصك الحالي بالجامعة؟</label>
+          <select class="major-select" id="majorSelect">
+            <option value="">اختر التخصص...</option>
+            ${FIELDS.map(f => `<optgroup label="${esc(f.name)}">${f.specs.map(s=>`<option value="${s.id}" ${p.majorId===s.id?'selected':''}>${esc(s.name)}</option>`).join('')}</optgroup>`).join('')}
+          </select>
+        </div>
+        <div class="err-msg" id="errMsg"></div>
+        <button class="primary-btn" id="startBtn">${isEdit ? 'حفظ التعديلات' : 'ادخل إلى مسار'}</button>
+      </div>
+    </div>
+  `;
+  const roleHsBtn = document.getElementById('roleHs');
+  const roleUniBtn = document.getElementById('roleUni');
+  const majorField = document.getElementById('majorField');
+  let role = p.role;
+  function paintRole(){
+    roleHsBtn.classList.toggle('active', role==='hs');
+    roleUniBtn.classList.toggle('active', role==='uni');
+    majorField.classList.toggle('hidden', role!=='uni');
+  }
+  paintRole();
+  roleHsBtn.onclick = ()=>{ role='hs'; paintRole(); };
+  roleUniBtn.onclick = ()=>{ role='uni'; paintRole(); };
+
+  document.getElementById('startBtn').onclick = ()=>{
+    const name = document.getElementById('nameInput').value.trim();
+    const majorId = document.getElementById('majorSelect')?.value || '';
+    const errEl = document.getElementById('errMsg');
+    if(!name){ errEl.textContent='اكتب اسمك أولاً.'; errEl.style.display='block'; return; }
+    if(role==='uni' && !majorId){ errEl.textContent='اختر تخصصك الحالي.'; errEl.style.display='block'; return; }
+    errEl.style.display='none';
+    profile = {name, role, majorId: role==='uni'?majorId:'', pinned: p.pinned || []};
+    saveProfile();
+    renderWho();
+    renderHome();
+  };
+}
+
+function renderHome(){
+  stopListening();
+  const pinnedSpecs = (profile.pinned||[]).map(id=>specById(id)).filter(Boolean);
+  mainEl.innerHTML = `
+    <div class="home-wrap">
+      <div class="home-hero">
+        <h2 class="display">وين مسارك؟</h2>
+        <p>كل تخصص إله غرفة نقاش خاصة فيه، فيها طلاب جامعيين يدرسونه فعليًا. اسأل، اقرأ تجارب غيرك، وثبّت التخصصات اللي بتفكر فيها.</p>
+      </div>
+      <div class="quick-actions">
+        <button class="quick-action-btn" id="examsNavBtn">📝 امتحانات تجريبية</button>
+      </div>
+      <div class="search-box"><input type="text" id="searchInput" placeholder="ابحث عن تخصص... مثلاً: طاقة، برمجة، محاسبة"></div>
+      ${pinnedSpecs.length ? `
+      <div class="pinned-section">
+        <h3>⭐ تخصصاتك المثبتة</h3>
+        <div class="pinned-chips">
+          ${pinnedSpecs.map(s=>`<button class="pinned-chip" data-open="${s.id}">${esc(s.name)}</button>`).join('')}
+        </div>
+      </div>` : ''}
+      <div class="fields-grid" id="fieldsGrid"></div>
+      ${!isAdminUser ? `<div class="admin-entry-wrap"><button class="admin-login-link" id="adminEntryBtn">🛡️ دخول الإدارة</button></div>` : ''}
+    </div>
+  `;
+  document.getElementById('examsNavBtn').onclick = ()=> renderExams();
+  const adminEntryBtn = document.getElementById('adminEntryBtn');
+  if(adminEntryBtn) adminEntryBtn.onclick = ()=> renderAdminLogin();
+
+  function paintGrid(filter){
+    const grid = document.getElementById('fieldsGrid');
+    const f = (filter||'').trim();
+    grid.innerHTML = FIELDS.map(field=>{
+      const specs = field.specs.filter(s => !f || s.name.includes(f) || field.name.includes(f));
+      if(!specs.length) return '';
+      return `
+        <div class="field-line">
+          <div class="field-line-head">
+            <div class="field-dot" style="background:${field.color}">${field.name.charAt(0)}</div>
+            <h3>${esc(field.name)}</h3>
+          </div>
+          <div class="track">
+            ${specs.map(s=>{
+              const pinned = (profile.pinned||[]).includes(s.id);
+              return `
+              <div class="spec-row ${pinned?'pinned':''}">
+                <button class="spec-name-btn" data-open="${s.id}">${esc(s.name)}</button>
+                <button class="pin-btn ${pinned?'active':''}" data-pin="${s.id}" title="ثبّت هذا التخصص">★</button>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }).join('');
+    grid.querySelectorAll('[data-open]').forEach(btn=>{ btn.onclick = ()=> renderRoom(btn.getAttribute('data-open')); });
+    grid.querySelectorAll('[data-pin]').forEach(btn=>{
+      btn.onclick = (e)=>{
+        e.stopPropagation();
+        const id = btn.getAttribute('data-pin');
+        profile.pinned = profile.pinned || [];
+        const idx = profile.pinned.indexOf(id);
+        if(idx>-1) profile.pinned.splice(idx,1); else profile.pinned.push(id);
+        saveProfile();
+        renderHome();
+      };
+    });
+  }
+  paintGrid('');
+  document.getElementById('searchInput').oninput = (e)=> paintGrid(e.target.value);
+  mainEl.querySelectorAll('.pinned-chip').forEach(btn=>{ btn.onclick = ()=> renderRoom(btn.getAttribute('data-open')); });
+}
+
+function renderAdminLogin(){
+  stopListening();
+  mainEl.innerHTML = `
+    <div class="onboard-wrap">
+      <div class="onboard-card">
+        <h1 class="display">دخول الإدارة</h1>
+        <p class="lead">هاد القسم مخصص للمشرفين المخوّلين فقط على "مسار".</p>
+        <div class="field"><label>البريد الإلكتروني</label><input type="email" id="adminEmail"></div>
+        <div class="field"><label>كلمة المرور</label><input type="password" id="adminPass"></div>
+        <div class="err-msg" id="adminErr"></div>
+        <button class="primary-btn" id="adminLoginBtn">دخول</button>
+        <button class="back-btn" id="adminBackBtn" style="margin-top:14px;">→ رجوع</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('adminBackBtn').onclick = ()=> renderHome();
+  document.getElementById('adminLoginBtn').onclick = async ()=>{
+    const email = document.getElementById('adminEmail').value.trim();
+    const pass = document.getElementById('adminPass').value;
+    const errEl = document.getElementById('adminErr');
+    if(!email || !pass){ errEl.textContent='عبّي البريد وكلمة المرور.'; errEl.style.display='block'; return; }
+    if(!auth){ errEl.textContent='الاتصال بالخدمة غير مفعّل حاليًا.'; errEl.style.display='block'; return; }
+    try{
+      const cred = await signInWithEmailAndPassword(auth, email, pass);
+      const ok = await checkIsAdmin(cred.user.uid);
+      if(!ok){
+        errEl.textContent = 'هذا الحساب غير مخوّل كإداري.';
+        errEl.style.display='block';
+        await signOut(auth);
+        return;
+      }
+      isAdminUser = true;
+      currentUser = cred.user;
+      showToast('تم الدخول كإداري بنجاح');
+      renderWho();
+      renderAdminPanel();
+    }catch(e){
+      errEl.textContent = 'بيانات الدخول غير صحيحة.';
+      errEl.style.display='block';
+    }
+  };
+}
+
+async function renderAdminPanel(){
+  stopListening();
+  mainEl.innerHTML = `
+    <div class="home-wrap">
+      <button class="back-btn" id="adminBack">→ رجوع للرئيسية</button>
+      <div class="home-hero">
+        <h2 class="display">لوحة الإدارة</h2>
+        <p>قفل أو فتح أي غرفة نقاش. الكتم يتم من داخل الغرفة نفسها بجانب أي رسالة.</p>
+      </div>
+      <button class="primary-btn" id="adminLogoutBtn" style="max-width:220px;margin-bottom:20px;">تسجيل خروج الإدارة</button>
+      <div class="admin-section">
+        <h3>🔒 قفل / فتح الغرف</h3>
+        <div id="roomsLockList">جاري التحميل...</div>
+      </div>
+    </div>
+  `;
+  document.getElementById('adminBack').onclick = ()=> renderHome();
+  document.getElementById('adminLogoutBtn').onclick = async ()=>{
+    if(auth) await signOut(auth);
+    isAdminUser=false;
+    showToast('تم تسجيل الخروج من الإدارة');
+    renderWho();
+    renderHome();
+  };
+
+  const listEl = document.getElementById('roomsLockList');
+  listEl.innerHTML = ALL_SPECS.map(s=>`
+    <div class="admin-room-row">
+      <span>${esc(s.name)}</span>
+      <button class="lock-toggle-btn" data-spec="${s.id}">...</button>
+    </div>
+  `).join('');
+
+  const results = await Promise.all(ALL_SPECS.map(async s=>{
+    try{
+      const snap = await getDoc(doc(db,'rooms',s.id));
+      return {id:s.id, locked: snap.exists() && !!snap.data().locked};
+    }catch(e){ return {id:s.id, locked:false}; }
+  }));
+  results.forEach(r=>{
+    const btn = listEl.querySelector(`.lock-toggle-btn[data-spec="${r.id}"]`);
+    if(!btn) return;
+    btn.textContent = r.locked ? '🔒 مقفولة — دوس للفتح' : '🔓 مفتوحة — دوس للقفل';
+    btn.classList.toggle('locked', r.locked);
+    btn.onclick = async ()=>{
+      try{
+        await setDoc(doc(db,'rooms',r.id), {locked: !r.locked}, {merge:true});
+        showToast(!r.locked ? 'تم قفل الغرفة' : 'تم فتح الغرفة');
+        renderAdminPanel();
+      }catch(e){ showToast('تعذّر تنفيذ العملية'); }
+    };
+  });
+}
+
+async function muteUser(uid, name){
+  if(!uid){ showToast('تعذّر تحديد المستخدم'); return; }
+  const choice = window.prompt(
+    'كتم "' + name + '" — اكتب رقم الخيار:\n1) ساعة\n2) يوم\n3) 3 أيام\n4) أسبوع\n5) إلغاء الكتم عنه', '2'
+  );
+  if(!choice) return;
+  const map = {'1':3600000,'2':86400000,'3':3*86400000,'4':7*86400000};
+  try{
+    if(choice.trim()==='5'){
+      await deleteDoc(doc(db,'mutes',uid));
+      showToast('تم إلغاء الكتم');
+    }else if(map[choice.trim()]){
+      await setDoc(doc(db,'mutes',uid), {mutedUntil: Date.now()+map[choice.trim()], mutedBy:profile.name, name, ts:Date.now()});
+      showToast('تم كتم المستخدم');
+    }
+  }catch(e){ showToast('تعذّر تنفيذ العملية'); }
+}
+
+async function renderExams(){
+  stopListening();
+  mainEl.innerHTML = `
+    <div class="home-wrap">
+      <button class="back-btn" id="examsBack">→ رجوع</button>
+      <div class="home-hero">
+        <h2 class="display">📝 امتحانات تجريبية</h2>
+        <p>جرّب امتحانات تجريبية بمواد مختلفة قبل ما تدخل الامتحان الحقيقي.</p>
+      </div>
+      ${isAdminUser ? `
+      <div class="admin-add-exam">
+        <h3>إضافة امتحان جديد</h3>
+        <div class="field"><label>عنوان الامتحان</label><input type="text" id="examTitle"></div>
+        <div class="field"><label>التخصص المرتبط</label>
+          <select class="major-select" id="examSpec">
+            ${FIELDS.map(f => `<optgroup label="${esc(f.name)}">${f.specs.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')}</optgroup>`).join('')}
+          </select>
+        </div>
+        <div class="field"><label>وصف مختصر</label><input type="text" id="examDesc"></div>
+        <div class="field"><label>رابط الامتحان</label><input type="text" id="examUrl" placeholder="https://..."></div>
+        <button class="primary-btn" id="addExamBtn">إضافة الامتحان</button>
+      </div>` : ''}
+      <div class="search-box"><input type="text" id="examSearch" placeholder="ابحث عن مادة أو تخصص..."></div>
+      <div id="examsList"><p style="color:var(--ink-soft);text-align:center;padding:20px;">جاري التحميل...</p></div>
+    </div>
+  `;
+  document.getElementById('examsBack').onclick = ()=> renderHome();
+
+  if(isAdminUser){
+    document.getElementById('addExamBtn').onclick = async ()=>{
+      const title = document.getElementById('examTitle').value.trim();
+      const specId = document.getElementById('examSpec').value;
+      const description = document.getElementById('examDesc').value.trim();
+      const url = document.getElementById('examUrl').value.trim();
+      if(!title || !url){ showToast('عبّي العنوان والرابط على الأقل'); return; }
+      try{
+        await addDoc(collection(db,'exams'), {title, specId, description, url, addedBy:profile.name, ts:Date.now()});
+        showToast('تمت إضافة الامتحان');
+        renderExams();
+      }catch(e){ showToast('تعذّر إضافة الامتحان'); }
+    };
+  }
+
+  const listEl = document.getElementById('examsList');
+  let allExams = [];
+  if(db){
+    try{
+      const snap = await getDocs(query(collection(db,'exams'), orderBy('ts','desc')));
+      allExams = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    }catch(e){ /* ignore */ }
+  }
+  function paintExams(filter){
+    const f=(filter||'').trim();
+    const filtered = allExams.filter(ex=>{
+      const spec = specById(ex.specId);
+      return !f || (ex.title||'').includes(f) || (spec && spec.name.includes(f));
+    });
+    if(!filtered.length){
+      listEl.innerHTML = '<div class="empty-state"><div class="display">ولا امتحان لسا</div><p>' +
+        (isAdminUser?'ضيف أول امتحان من الفورم فوق.':'رجعوا لاحقًا، رح تلاقوا امتحانات تجريبية هون قريبًا 🌱') + '</p></div>';
+      return;
+    }
+    listEl.innerHTML = filtered.map(ex=>{
+      const spec = specById(ex.specId);
+      return `
+      <div class="exam-card">
+        <span class="exam-spec-tag">${spec?esc(spec.name):''}</span>
+        <h3>${esc(ex.title||'')}</h3>
+        ${ex.description?`<p>${esc(ex.description)}</p>`:''}
+        <a href="${esc(ex.url||'#')}" target="_blank" rel="noopener" class="exam-open-btn">افتح الامتحان ↗</a>
+      </div>`;
+    }).join('');
+  }
+  paintExams('');
+  document.getElementById('examSearch').oninput = (e)=> paintExams(e.target.value);
+}
+
+function timeAgo(ts){
+  const diff = Math.max(0, Date.now()-ts);
+  const m = Math.floor(diff/60000);
+  if(m<1) return 'الآن';
+  if(m<60) return m+' د';
+  const h = Math.floor(m/60);
+  if(h<24) return h+' س';
+  return Math.floor(h/24)+' يوم';
+}
+
+async function registerExpert(specId){
+  if(!db || !profile || profile.role!=='uni' || profile.majorId!==specId) return;
+  try{
+    await setDoc(doc(db,'rooms',specId), { expertNames: arrayUnion(profile.name) }, { merge:true });
+  }catch(e){ /* silent */ }
+}
+async function fetchRoomMeta(specId){
+  if(!db) return {expertNames:[], locked:false};
+  try{
+    const snap = await getDoc(doc(db,'rooms',specId));
+    if(!snap.exists()) return {expertNames:[], locked:false};
+    const d = snap.data();
+    return {expertNames:d.expertNames||[], locked:!!d.locked};
+  }catch(e){ return {expertNames:[], locked:false}; }
+}
+async function checkMyMute(){
+  if(!db || !currentUser) return null;
+  try{
+    const snap = await getDoc(doc(db,'mutes',currentUser.uid));
+    if(snap.exists() && snap.data().mutedUntil > Date.now()) return snap.data();
+    return null;
+  }catch(e){ return null; }
+}
+
+async function renderRoom(specId){
+  stopListening();
+  currentRoom = specId;
+  const spec = specById(specId);
+  const field = fieldById(spec.fieldId);
+
+  mainEl.innerHTML = `
+    <div class="room-wrap">
+      <div class="room-header">
+        <button class="back-btn" id="backBtn">→ رجوع لكل التخصصات</button>
+        <div class="room-title-row">
+          <div>
+            <h2>${esc(spec.name)}</h2>
+            <div class="room-breadcrumb">${esc(field.name)} • غرفة نقاش خاصة بهذا التخصص</div>
+          </div>
+          <div id="roomLockBtnWrap"></div>
+        </div>
+        <div class="experts-row" id="expertsRow"></div>
+      </div>
+      <div id="roomBannerWrap"></div>
+      <div class="messages" id="messagesBox"></div>
+      <div class="composer">
+        <textarea id="msgInput" rows="1" placeholder="اسأل سؤالك أو شارك تجربتك بـ ${esc(spec.name)}..." ${db?'':'disabled'}></textarea>
+        <button class="send-btn" id="sendBtn" ${db?'':'disabled'}>↑</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('backBtn').onclick = ()=> renderHome();
+
+  if(!db){
+    document.getElementById('messagesBox').innerHTML = '<div class="empty-state"><div class="display">الدردشة غير مفعّلة بعد</div><p>اربط مشروع Firebase أولاً من أعلى ملف الكود.</p></div>';
+    return;
+  }
+
+  await registerExpert(specId);
+  const meta = await fetchRoomMeta(specId);
+  const expRow = document.getElementById('expertsRow');
+  expRow.innerHTML = meta.expertNames.length
+    ? '<span class="experts-label">طلاب فعليون بهذا التخصص:</span>' + meta.expertNames.slice(-8).map(n=>`<span class="expert-chip">${esc(n)}</span>`).join('')
+    : '<span class="experts-label">ولا طالب جامعي مسجل هون بعد — كن أول من ينوّر الطريق 🌱</span>';
+
+  const lockWrap = document.getElementById('roomLockBtnWrap');
+  if(isAdminUser){
+    lockWrap.innerHTML = `<button class="lock-toggle-btn small ${meta.locked?'locked':''}" id="roomLockBtn">${meta.locked?'🔒 افتح الغرفة':'🔓 اقفل الغرفة'}</button>`;
+    document.getElementById('roomLockBtn').onclick = async ()=>{
+      try{
+        await setDoc(doc(db,'rooms',specId), {locked: !meta.locked}, {merge:true});
+        showToast(!meta.locked?'تم قفل الغرفة':'تم فتح الغرفة');
+        renderRoom(specId);
+      }catch(e){ showToast('تعذّر تنفيذ العملية'); }
+    };
+  }
+
+  const myMute = await checkMyMute();
+  const bannerWrap = document.getElementById('roomBannerWrap');
+  const input = document.getElementById('msgInput');
+  const sendBtn = document.getElementById('sendBtn');
+  let composerDisabled = false;
+
+  if(meta.locked && !isAdminUser){
+    bannerWrap.innerHTML = '<div class="room-banner locked">🔒 هاي الغرفة مقفولة مؤقتًا من قبل الإدارة، ما فيك ترسل رسائل هلق — بس تقدر تقرأ.</div>';
+    composerDisabled = true;
+  }else if(myMute){
+    const until = new Date(myMute.mutedUntil).toLocaleString('ar');
+    bannerWrap.innerHTML = `<div class="room-banner muted">🔇 تم كتمك من قبل الإدارة حتى ${esc(until)}.</div>`;
+    composerDisabled = true;
+  }
+  if(composerDisabled){ input.disabled = true; sendBtn.disabled = true; }
+
+  const box = document.getElementById('messagesBox');
+  const q = query(collection(db,'rooms',specId,'messages'), orderBy('ts','asc'), limit(200));
+  unsubscribeMessages = onSnapshot(q, (snapshot)=>{
+    const msgs = snapshot.docs.map(d=>d.data());
+    if(!msgs.length){
+      box.innerHTML = '<div class="empty-state"><div class="display">لسا ما في نقاش هون</div><p>كن أول من يبدأ! اسأل عن طبيعة التخصص، سوق العمل، أو صعوبة المواد.</p></div>';
+      return;
+    }
+    box.innerHTML = msgs.map(m=>{
+      const isExpert = m.role==='uni' && m.majorId===specId;
+      return `
+        <div class="msg">
+          <div class="msg-head">
+            <span class="msg-name">${esc(m.name)}</span>
+            ${isExpert ? '<span class="msg-badge">✓ طالب/ة التخصص</span>' : '<span class="msg-role-hs">طالب/ة ثانوية</span>'}
+            <span class="msg-time">${timeAgo(m.ts)}</span>
+            ${isAdminUser ? `<button class="mute-btn" data-uid="${esc(m.uid||'')}" data-name="${esc(m.name)}">🔇 كتم</button>` : ''}
+          </div>
+          <div class="msg-bubble">${esc(m.text)}</div>
+        </div>`;
+    }).join('');
+    if(isAdminUser){
+      box.querySelectorAll('.mute-btn').forEach(btn=>{
+        btn.onclick = ()=> muteUser(btn.getAttribute('data-uid'), btn.getAttribute('data-name'));
+      });
+    }
+    box.scrollTop = box.scrollHeight;
+  }, (err)=>{
+    box.innerHTML = '<div class="empty-state"><div class="display">تعذّر تحميل الرسائل</div><p>تأكد من قواعد Firestore وإعدادات المشروع.</p></div>';
+  });
+
+  input.oninput = ()=>{ input.style.height='auto'; input.style.height=Math.min(120,input.scrollHeight)+'px'; };
+
+  async function send(){
+    const text = input.value.trim();
+    if(!text) return;
+    if(!currentUser){ showToast('في تأخير بالاتصال، جرب كمان شوي'); return; }
+    sendBtn.disabled = true;
+    try{
+      await addDoc(collection(db,'rooms',specId,'messages'), {
+        name:profile.name, role:profile.role, majorId:profile.majorId, text, ts:Date.now(), uid:currentUser.uid
+      });
+      input.value=''; input.style.height='auto';
+    }catch(e){
+      showToast('تعذّر إرسال الرسالة، حاول مرة أخرى');
+    }
+    sendBtn.disabled = composerDisabled;
+  }
+  sendBtn.onclick = send;
+  input.onkeydown = (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); send(); } };
+}
+
+(function init(){
+  loadProfile();
+  renderWho();
+  initAuth();
+  if(profile && profile.name){ renderHome(); }
+  else{ renderOnboarding(false); }
+})();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{ /* silent */ });
+  });
+}
+</script>
+</body>
+</html>

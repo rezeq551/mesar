@@ -1,0 +1,19 @@
+{
+  "name": "مسار — دليلك لاختيار التخصص",
+  "short_name": "مسار",
+  "description": "تطبيق يربط طلاب الثانوية العامة بطلاب الجامعة، حتى يستفيدوا من تجارب بعض قبل اختيار التخصص.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#EFF2ED",
+  "theme_color": "#146356",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
