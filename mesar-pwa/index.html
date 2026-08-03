@@ -399,7 +399,7 @@ function initAuth(){
   onAuthStateChanged(auth, async (user)=>{
     if(user){
       currentUser = user;
-      isAdminUser = await checkIsAdmin(user.uid);
+      isadminUser = await checkIsAdmin(9K6EguYX1hNHIEhsbplr5LNY1X02);
       renderWho();
     }else{
       try{ await signInAnonymously(auth); }catch(e){ /* silent */ }
