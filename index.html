@@ -284,7 +284,7 @@ const firebaseConfig = {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore, doc, getDoc, setDoc, deleteDoc, collection, addDoc, getDocs,
-  query, orderBy, limit, arrayUnion
+  query, orderBy, limit, onSnapshot, arrayUnion
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {
   getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
@@ -969,7 +969,7 @@ async function renderRoom(specId){
 
   const box = document.getElementById('messagesBox');
   const q = query(collection(db,'rooms',specId,'messages'), orderBy('ts','asc'), limit(200));
-  unsubscribeMessages = (q, (snapshot)=>{
+  unsubscribeMessages = onSnapshot(q, (snapshot)=>{
     const msgs = snapshot.docs.map(d=>d.data());
     if(!msgs.length){
       box.innerHTML = '<div class="empty-state"><div class="display">لسا ما في نقاش هون</div><p>كن أول من يبدأ! اسأل عن طبيعة التخصص، سوق العمل، أو صعوبة المواد.</p></div>';
@@ -1041,6 +1041,7 @@ async function send(){
     }
     sendBtn.disabled = composerDisabled;
   }
+  sendBtn.onclick = send;
   input.onkeydown = (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); send(); } };
 }
 
