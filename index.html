@@ -1010,7 +1010,7 @@ async function send(){
     if (text.startsWith('/delete') && isAdminUser) {
         try {
             const args = text.trim().split(' ');
-            const deleteLimit = args[1] ? parseInt(args[1]) : 20; // حذف آخر 20 رسالة افتراضياً
+            const deleteLimit = args[1] ? parseInt(args[1]) : 20;
 
             const messagesRef = collection(db, 'rooms', specId, 'messages');
             const qDel = query(messagesRef, orderBy('ts', 'desc'), limit(deleteLimit));
@@ -1030,6 +1030,7 @@ async function send(){
         return; 
     }
 
+    // 💬 كود الإرسال العادي للرسائل
     if(!currentUser){ showToast('في تأخير بالاتصال، جرب كمان شوي'); return; }
     sendBtn.disabled = true;
     try{
@@ -1042,7 +1043,6 @@ async function send(){
     }
     sendBtn.disabled = composerDisabled;
   }
-  sendBtn.onclick = send;
   input.onkeydown = (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); send(); } };
 }
 
