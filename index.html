@@ -286,7 +286,7 @@ const firebaseConfig = {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore, doc, getDoc, setDoc, deleteDoc, collection, addDoc, getDocs,
-  query, orderBy, limit, onSnapshot, arrayUnion
+  query, orderBy, limit, , arrayUnion
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {
   getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
@@ -383,7 +383,7 @@ function showToast(text){
   setTimeout(()=>t.classList.remove('show'), 2200);
 }
 function esc(str){
-  const d = document.createElement('div');
+  const d = document.createElement[('div');
   d.textContent = str;
   return d.innerHTML;
 }
@@ -971,7 +971,7 @@ async function renderRoom(specId){
 
   const box = document.getElementById('messagesBox');
   const q = query(collection(db,'rooms',specId,'messages'), orderBy('ts','asc'), limit(200));
-  unsubscribeMessages = onSnapshot(q, (snapshot)=>{
+  unsubscribeMessages = (q, (snapshot)=>{
     const msgs = snapshot.docs.map(d=>d.data());
     if(!msgs.length){
       box.innerHTML = '<div class="empty-state"><div class="display">لسا ما في نقاش هون</div><p>كن أول من يبدأ! اسأل عن طبيعة التخصص، سوق العمل، أو صعوبة المواد.</p></div>';
@@ -1002,9 +1002,34 @@ async function renderRoom(specId){
 
   input.oninput = ()=>{ input.style.height='auto'; input.style.height=Math.min(120,input.scrollHeight)+'px'; };
 
-  async function send(){
+async function send(){
     const text = input.value.trim();
     if(!text) return;
+
+    // 🗑️ كود أمر الحذف للمشرفين
+    if (text.startsWith('/delete') && isAdminUser) {
+        try {
+            const args = text.trim().split(' ');
+            const deleteLimit = args[1] ? parseInt(args[1]) : 20; // حذف آخر 20 رسالة افتراضياً
+
+            const messagesRef = collection(db, 'rooms', specId, 'messages');
+            const qDel = query(messagesRef, orderBy('ts', 'desc'), limit(deleteLimit));
+            const snapshot = await getDocs(qDel);
+
+            const deletePromises = snapshot.docs.map(docSnap => deleteDoc(docSnap.ref));
+            await Promise.all(deletePromises);
+
+            showToast('تم حذف الرسائل بنجاح 🗑️');
+        } catch (e) {
+            console.error(e);
+            showToast('تعذر تنفيذ أمر الحذف');
+        }
+        input.value = '';
+        input.style.height = 'auto';
+        sendBtn.disabled = composerDisabled;
+        return; 
+    }
+
     if(!currentUser){ showToast('في تأخير بالاتصال، جرب كمان شوي'); return; }
     sendBtn.disabled = true;
     try{
