@@ -395,7 +395,7 @@ function stopListening(){
    المصادقة والملف الشخصي (Firebase Authentication + Firestore)
 --------------------------------------------------------- */
 async function checkIsadmin(uid){
-  if(!db || !uid) return false;
+  if(!db) return false;
   try{ const snap = await getDoc(doc(db,'admins',uid)); return snap.exists(); }
   catch(e){ return false; }
 }
